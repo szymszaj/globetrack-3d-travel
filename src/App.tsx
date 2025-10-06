@@ -79,9 +79,9 @@ function App() {
         {/* Globe */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">3D Interactive Globe</h2>
+            <h2 className="text-xl font-semibold">3D Interactive Globe with Clouds</h2>
             <p className="text-sm text-muted-foreground">
-              Click anywhere on the globe to add travel pins • Orange pins show your visits
+              Click anywhere on the globe to add travel pins • Orange pins show your visits • Animated cloud layer
             </p>
           </div>
           

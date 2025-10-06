@@ -34,6 +34,31 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
     size: selectedPin?.id === pin.id ? 0.8 : 0.4,
   }))
 
+  // Add clouds after globe is ready
+  useEffect(() => {
+    if (isLoaded && globeRef.current) {
+      const globe = globeRef.current
+      
+      // Add clouds layer using three.js
+      const cloudsGeometry = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.006, 50, 50)
+      const cloudsMaterial = new THREE.MeshLambertMaterial({
+        map: new THREE.TextureLoader().load('//unpkg.com/three-globe/example/img/earth-clouds.png'),
+        transparent: true,
+        opacity: 0.4
+      })
+      
+      const cloudsMesh = new THREE.Mesh(cloudsGeometry, cloudsMaterial)
+      globe.scene().add(cloudsMesh)
+      
+      // Rotate clouds slowly
+      const rotateClouds = () => {
+        cloudsMesh.rotation.y += 0.001
+        requestAnimationFrame(rotateClouds)
+      }
+      rotateClouds()
+    }
+  }, [isLoaded])
+
   const handleGlobeClick = ({ lat, lng }: { lat: number; lng: number }) => {
     onLocationClick(lat, lng)
   }
@@ -59,9 +84,13 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
       <div className="w-full h-full">
         <Globe
           ref={globeRef}
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+          
+          // Clouds layer - using the correct property names
+          showGlobe={true}
+          showAtmosphere={true}
           
           // Points (travel pins)
           pointsData={pointsData}
@@ -114,7 +143,7 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
       
       {/* Instructions */}
       <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-2 rounded-md text-sm backdrop-blur-sm">
-        <p>🌍 Click on globe to add pins • {(pins || []).length} places visited</p>
+        <p>🌍 Click on globe to add pins • ☁️ Animated clouds layer • {(pins || []).length} places visited</p>
       </div>
     </div>
   )
