@@ -21,7 +21,7 @@ interface InteractiveGlobeProps {
 }
 
 export function InteractiveGlobe({ onLocationClick, onPinClick, selectedPin }: InteractiveGlobeProps) {
-  const globeRef = useRef<any>()
+  const globeRef = useRef<any>(null)
   const [pins] = useKV<TravelPin[]>('travel-pins', [])
   const [isGlobeReady, setIsGlobeReady] = useState(false)
 
