@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,12 +34,28 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
   const [isLoading, setIsLoading] = useState(false)
   
   const [formData, setFormData] = useState({
-    city: editPin?.city || '',
-    country: editPin?.country || '',
-    date: editPin?.date || new Date().toISOString().split('T')[0],
-    description: editPin?.description || '',
-    photo: editPin?.photo || ''
+    city: '',
+    country: '',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    photo: ''
   })
+
+  const [selectedCityData, setSelectedCityData] = useState<CityData | null>(null)
+
+  // Reset form when opening/closing or when editPin changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        city: editPin?.city || '',
+        country: editPin?.country || '',
+        date: editPin?.date || new Date().toISOString().split('T')[0],
+        description: editPin?.description || '',
+        photo: editPin?.photo || ''
+      })
+      setSelectedCityData(null) // Reset selected city data when opening form
+    }
+  }, [isOpen, editPin])
 
   const handleCitySelect = (city: CityData) => {
     setFormData(prev => ({
@@ -47,6 +63,7 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
       city: city.city,
       country: city.country
     }))
+    setSelectedCityData(city)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,10 +71,14 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
     setIsLoading(true)
 
     try {
+      // Use coordinates from selected city if available, otherwise use provided lat/lng, otherwise fallback to 0,0
+      const pinLat = selectedCityData?.lat || editPin?.lat || lat || 0
+      const pinLng = selectedCityData?.lng || editPin?.lng || lng || 0
+
       const newPin: TravelPin = {
         id: editPin?.id || Date.now().toString(),
-        lat: editPin?.lat || lat || 0,
-        lng: editPin?.lng || lng || 0,
+        lat: pinLat,
+        lng: pinLng,
         name: formData.city, // Use city name as the place name
         ...formData
       }
@@ -80,6 +101,7 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
         description: '',
         photo: ''
       })
+      setSelectedCityData(null)
     } catch (error) {
       console.error('Error saving pin:', error)
     } finally {
@@ -108,6 +130,12 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
               placeholder="e.g., Paris, Warszawa, Tokyo..."
               required
             />
+            {selectedCityData && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                Coordinates: {selectedCityData.lat.toFixed(4)}, {selectedCityData.lng.toFixed(4)}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
