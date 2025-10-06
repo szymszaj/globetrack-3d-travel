@@ -31,15 +31,12 @@ export function CityAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  // Update suggestions when value changes
   useEffect(() => {
-    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
 
     if (value.length >= 1) {
-      // Add a small delay to prevent excessive searching
       timeoutRef.current = setTimeout(() => {
         const results = searchCities(value, 8)
         setSuggestions(results)
@@ -109,7 +106,6 @@ export function CityAutocomplete({
   }
 
   const handleInputBlur = (e: React.FocusEvent) => {
-    // Only close if focus is not moving to the popover
     if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget as Node)) {
       setTimeout(() => {
         setOpen(false)

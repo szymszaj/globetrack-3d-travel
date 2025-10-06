@@ -25,7 +25,6 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
   const [pins] = useKV<TravelPin[]>('travel-pins', [])
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Convert pins to points format for react-globe.gl
   const pointsData = (pins || []).map(pin => ({
     ...pin,
     lat: pin.lat,
@@ -61,17 +60,15 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
           
-          // Globe appearance
           showGlobe={true}
           showAtmosphere={true}
           
-          // Points (travel pins)
           pointsData={pointsData}
           pointLat="lat"
           pointLng="lng"
           pointAltitude={0.02}
           pointRadius="size"
-          pointColor={() => '#f97316'} // Orange color
+          pointColor={() => '#f97316'}
           pointResolution={8}
           onPointClick={handlePointClick}
           pointLabel={(point: any) => `
@@ -92,30 +89,24 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
             </div>
           `}
           
-          // Globe interaction
           onGlobeClick={handleGlobeClick}
           
-          // Styling and animation
           width={undefined}
           height={undefined}
           animateIn={true}
           waitForGlobeReady={true}
           
-          // Atmosphere styling
           atmosphereColor="#58a6ff"
           atmosphereAltitude={0.12}
           
-          // Controls
           enablePointerInteraction={true}
           
-          // Globe ready callback
           onGlobeReady={() => {
             setIsLoaded(true)
           }}
         />
       </div>
       
-      {/* Instructions */}
       <div className="absolute bottom-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm border border-border/20">
         <p className="flex items-center gap-2">
           <span>🌍</span>
