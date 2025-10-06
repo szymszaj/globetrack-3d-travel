@@ -40,31 +40,47 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    const globe = globeRef.current
-    if (!globe) return
+    let terminatorInterval: NodeJS.Timeout | null = null
 
-    // Wait for globe to be ready, then add day/night terminator
-    globe.onGlobeReady(() => {
-      const scene = globe.scene()
-      const terminatorMesh = computeTerminatorMesh()
-      scene.add(terminatorMesh)
-      globe.terminatorMesh = terminatorMesh
-      setIsLoaded(true)
-    })
+    // Setup terminator animation once globe is loaded
+    if (isLoaded) {
+      const globe = globeRef.current
+      if (globe) {
+        try {
+          const scene = globe.scene()
+          if (scene) {
+            // Remove any existing terminator
+            if (globe.terminatorMesh) {
+              scene.remove(globe.terminatorMesh)
+            }
+            
+            const terminatorMesh = computeTerminatorMesh()
+            scene.add(terminatorMesh)
+            globe.terminatorMesh = terminatorMesh
 
-    // Update terminator position based on current time
-    const interval = setInterval(() => {
-      const tMesh = globeRef.current?.terminatorMesh
-      if (tMesh) {
-        const now = new Date()
-        const hours = now.getUTCHours() + now.getUTCMinutes() / 60
-        const angle = (hours / 24) * Math.PI * 2
-        tMesh.rotation.y = angle
+            // Start the day/night cycle animation
+            terminatorInterval = setInterval(() => {
+              const tMesh = globeRef.current?.terminatorMesh
+              if (tMesh) {
+                const now = new Date()
+                const hours = now.getUTCHours() + now.getUTCMinutes() / 60
+                const angle = (hours / 24) * Math.PI * 2
+                tMesh.rotation.y = angle
+              }
+            }, 1000)
+          }
+        } catch (error) {
+          console.warn('Could not setup day/night terminator:', error)
+        }
       }
-    }, 1000)
+    }
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => {
+      if (terminatorInterval) {
+        clearInterval(terminatorInterval)
+      }
+    }
+  }, [isLoaded])
 
   // Convert pins to points format for react-globe.gl
   const pointsData = (pins || []).map(pin => ({
@@ -136,7 +152,7 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
           width={undefined}
           height={undefined}
           animateIn={true}
-          waitForGlobeReady={true}
+          waitForGlobeReady={false}
           
           // Atmosphere
           atmosphereColor="#58a6ff"
@@ -144,6 +160,11 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
           
           // Controls
           enablePointerInteraction={true}
+          
+          // Globe ready callback - proper way to handle initialization
+          onGlobeReady={() => {
+            setIsLoaded(true)
+          }}
         />
       </div>
       
