@@ -123,17 +123,18 @@
 ## Recent Enhancements
 
 ### Smart City Autocomplete System
-- **Comprehensive Database**: 200+ cities from all continents with multiple language variations (e.g., "Warszawa"/"Warsaw", "Paryż"/"Paris")
-- **Intelligent Matching**: Fuzzy search supports partial matches, typos, and alternate spellings
+- **Comprehensive Database**: 270+ cities from all continents with multiple language variations (e.g., "Warszawa"/"Warsaw", "Paryż"/"Paris")
+- **Intelligent Matching**: Fuzzy search supports partial matches, typos, and alternate spellings, including country search ("pol" finds Poland cities, "fra" finds France cities)
 - **Auto-Population**: Selecting a city automatically fills the country field
+- **Streamlined Form**: Removed place name field - city name is used automatically
 - **Keyboard Navigation**: Full keyboard support with arrow keys and Enter to select
-- **Real-time Suggestions**: Displays relevant cities as user types with contextual information
+- **Real-time Suggestions**: Displays relevant cities as user types with contextual information starting from first character
 
-### Enhanced Globe Visual Effects
-- **Animated Cloud Layer**: Real-time rotating cloud coverage using Three.js mesh overlay
-- **Day/Night Cycle**: Dynamic terminator shadow that moves based on current UTC time
-- **Improved Atmosphere**: Enhanced atmospheric glow and better pin visibility
-- **Dark Earth Texture**: Switched to dark earth texture for better GitHub dark theme integration
+### Simplified Globe Experience
+- **Classic Earth View**: Restored original blue marble earth texture for familiar, beautiful appearance
+- **Clean Interface**: Simplified globe without complex cloud layers or day/night effects for better performance
+- **Responsive Interactions**: Smooth pin placement and selection with clear visual feedback
+- **Streamlined UI**: Removed complex visual effects in favor of core functionality and performance
 
 ## Reflection
 

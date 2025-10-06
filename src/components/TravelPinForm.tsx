@@ -34,7 +34,6 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
   const [isLoading, setIsLoading] = useState(false)
   
   const [formData, setFormData] = useState({
-    name: editPin?.name || '',
     city: editPin?.city || '',
     country: editPin?.country || '',
     date: editPin?.date || new Date().toISOString().split('T')[0],
@@ -59,6 +58,7 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
         id: editPin?.id || Date.now().toString(),
         lat: editPin?.lat || lat || 0,
         lng: editPin?.lng || lng || 0,
+        name: formData.city, // Use city name as the place name
         ...formData
       }
 
@@ -74,7 +74,6 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
 
       onClose()
       setFormData({
-        name: '',
         city: '',
         country: '',
         date: new Date().toISOString().split('T')[0],
@@ -99,30 +98,16 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium">Place Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Eiffel Tower"
-                required
-                className="bg-background border-border"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="city" className="text-sm font-medium">City</Label>
-              <CityAutocomplete
-                id="city"
-                value={formData.city}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
-                onCitySelect={handleCitySelect}
-                placeholder="e.g., Paris, Warszawa, Tokyo..."
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-sm font-medium">City</Label>
+            <CityAutocomplete
+              id="city"
+              value={formData.city}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+              onCitySelect={handleCitySelect}
+              placeholder="e.g., Paris, Warszawa, Tokyo..."
+              required
+            />
           </div>
 
           <div className="space-y-2">

@@ -79,9 +79,9 @@ function App() {
         {/* Globe */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">3D Interactive Globe with Smart Autocomplete</h2>
+            <h2 className="text-xl font-semibold">Interactive Travel Globe</h2>
             <p className="text-sm text-muted-foreground">
-              Click anywhere to add pins • Smart city autocomplete • Live clouds & day/night
+              Click anywhere to add pins • Smart city/country autocomplete • Track your adventures
             </p>
           </div>
           

@@ -267,11 +267,11 @@ export const CITIES_DATABASE: CityData[] = [
   { city: 'Brisbane', country: 'Australia', continent: 'Oceania' },
   { city: 'Perth', country: 'Australia', continent: 'Oceania' },
   { city: 'Adelaide', country: 'Australia', continent: 'Oceania' },
-  
+
   { city: 'Auckland', country: 'New Zealand', continent: 'Oceania' },
   { city: 'Wellington', country: 'New Zealand', continent: 'Oceania' },
   { city: 'Christchurch', country: 'New Zealand', continent: 'Oceania' },
-  
+
   { city: 'Suva', country: 'Fiji', continent: 'Oceania' },
   { city: 'Port Moresby', country: 'Papua New Guinea', continent: 'Oceania' },
 ]
@@ -281,7 +281,7 @@ export const CITIES_DATABASE: CityData[] = [
  * Supports both city names and country names
  */
 export function searchCities(query: string, limit: number = 10): CityData[] {
-  if (!query || query.length < 2) return []
+  if (!query || query.length < 1) return []
   
   const normalizedQuery = query.toLowerCase().trim()
   
@@ -296,25 +296,43 @@ export function searchCities(query: string, limit: number = 10): CityData[] {
     if (cityName.startsWith(normalizedQuery)) {
       score = 100
     }
-    // Exact match anywhere in the name
+    // Exact match anywhere in the city name
     else if (cityName.includes(normalizedQuery)) {
       score = 80
     }
-    // Country name match
+    // Country name starts with query (for pol -> Poland, fra -> France)
+    else if (countryName.startsWith(normalizedQuery)) {
+      score = 90
+    }
+    // Country name contains query
     else if (countryName.includes(normalizedQuery)) {
-      score = 60
+      score = 70
     }
     // Fuzzy matching for similar strings
     else if (isStringsSimilar(normalizedQuery, cityName)) {
       score = 40
     }
+    // Fuzzy matching for country names
+    else if (isStringsSimilar(normalizedQuery, countryName)) {
+      score = 30
+    }
     
     return { ...city, score }
   })
   
-  // Filter out non-matches and sort by score
-  return scoredCities
+  // Filter out non-matches, remove duplicates, and sort by score
+  const uniqueCities = new Map<string, typeof scoredCities[0]>()
+  
+  scoredCities
     .filter(city => city.score > 0)
+    .forEach(city => {
+      const key = `${city.city}-${city.country}`
+      if (!uniqueCities.has(key) || (uniqueCities.get(key)?.score || 0) < city.score) {
+        uniqueCities.set(key, city)
+      }
+    })
+  
+  return Array.from(uniqueCities.values())
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
 }

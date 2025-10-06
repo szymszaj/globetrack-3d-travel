@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
 import Globe from 'react-globe.gl'
-import * as THREE from 'three'
 import { useKV } from '@github/spark/hooks'
 
 interface TravelPin {
@@ -25,22 +24,6 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
   const globeRef = useRef<any>(null)
   const [pins] = useKV<TravelPin[]>('travel-pins', [])
   const [isLoaded, setIsLoaded] = useState(false)
-  const cloudsMeshRef = useRef<THREE.Mesh | null>(null)
-
-  // Suppress ResizeObserver errors
-  useEffect(() => {
-    const originalError = console.error
-    console.error = (...args) => {
-      if (args[0]?.includes?.('ResizeObserver loop completed')) {
-        return // Ignore ResizeObserver errors
-      }
-      originalError(...args)
-    }
-    
-    return () => {
-      console.error = originalError
-    }
-  }, [])
 
   // Convert pins to points format for react-globe.gl
   const pointsData = (pins || []).map(pin => ({
@@ -49,62 +32,6 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
     lng: pin.lng,
     size: selectedPin?.id === pin.id ? 0.8 : 0.4,
   }))
-
-  // Add clouds layer and day/night cycle after globe is ready
-  useEffect(() => {
-    if (isLoaded && globeRef.current && !cloudsMeshRef.current) {
-      const globe = globeRef.current
-      
-      try {
-        // Add clouds layer using three.js
-        const cloudsGeometry = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.006, 50, 50)
-        const cloudsMaterial = new THREE.MeshLambertMaterial({
-          map: new THREE.TextureLoader().load('//unpkg.com/three-globe/example/img/earth-clouds.png'),
-          transparent: true,
-          opacity: 0.2
-        })
-        
-        const cloudsMesh = new THREE.Mesh(cloudsGeometry, cloudsMaterial)
-        cloudsMeshRef.current = cloudsMesh
-        globe.scene().add(cloudsMesh)
-        
-        // Add day/night terminator effect
-        const terminatorGeometry = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.001, 64, 64)
-        const terminatorMaterial = new THREE.MeshBasicMaterial({
-          color: 0x000033,
-          opacity: 0.3,
-          transparent: true,
-          side: THREE.BackSide,
-        })
-        const terminatorMesh = new THREE.Mesh(terminatorGeometry, terminatorMaterial)
-        globe.scene().add(terminatorMesh)
-        
-        // Animate clouds and day/night cycle
-        const animate = () => {
-          try {
-            // Slowly rotate clouds
-            if (cloudsMeshRef.current) {
-              cloudsMeshRef.current.rotation.y += 0.0003
-            }
-            
-            // Update day/night terminator based on current time
-            const now = new Date()
-            const hours = now.getUTCHours() + now.getUTCMinutes() / 60
-            const angle = (hours / 24) * Math.PI * 2
-            terminatorMesh.rotation.y = angle
-            
-            requestAnimationFrame(animate)
-          } catch (err) {
-            // Safely handle animation errors
-          }
-        }
-        animate()
-        
-      } catch (error) {
-        console.log('Globe enhancement loading - basic globe will work fine')
-      }
-    }
-  }, [isLoaded])
 
   const handleGlobeClick = ({ lat, lng }: { lat: number; lng: number }) => {
     onLocationClick(lat, lng)
@@ -131,8 +58,7 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
       <div className="w-full h-full">
         <Globe
           ref={globeRef}
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
-          bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
           
           // Globe appearance
@@ -145,7 +71,7 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
           pointLng="lng"
           pointAltitude={0.02}
           pointRadius="size"
-          pointColor={() => '#f97316'} // Orange color like in the GitHub example
+          pointColor={() => '#f97316'} // Orange color
           pointResolution={8}
           onPointClick={handlePointClick}
           pointLabel={(point: any) => `
@@ -194,9 +120,6 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
         <p className="flex items-center gap-2">
           <span>🌍</span>
           <span>Click globe to add pins</span>
-          <span>•</span>
-          <span>☁️</span>
-          <span>Live clouds & day/night cycle</span>
           <span>•</span>
           <span className="text-accent font-medium">{(pins || []).length} places visited</span>
         </p>

@@ -29,17 +29,32 @@ export function CityAutocomplete({
   const [suggestions, setSuggestions] = useState<CityData[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Update suggestions when value changes
   useEffect(() => {
-    if (value.length >= 2) {
-      const results = searchCities(value, 8)
-      setSuggestions(results)
-      setSelectedIndex(-1)
-      setOpen(results.length > 0)
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    if (value.length >= 1) {
+      // Add a small delay to prevent excessive searching
+      timeoutRef.current = setTimeout(() => {
+        const results = searchCities(value, 8)
+        setSuggestions(results)
+        setSelectedIndex(-1)
+        setOpen(results.length > 0)
+      }, 100)
     } else {
       setSuggestions([])
       setOpen(false)
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
   }, [value])
 
@@ -88,17 +103,19 @@ export function CityAutocomplete({
   }
 
   const handleInputFocus = () => {
-    if (value.length >= 2 && suggestions.length > 0) {
+    if (value.length >= 1 && suggestions.length > 0) {
       setOpen(true)
     }
   }
 
-  const handleInputBlur = () => {
-    // Delay closing to allow clicking on suggestions
-    setTimeout(() => {
-      setOpen(false)
-      setSelectedIndex(-1)
-    }, 150)
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Only close if focus is not moving to the popover
+    if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget as Node)) {
+      setTimeout(() => {
+        setOpen(false)
+        setSelectedIndex(-1)
+      }, 200)
+    }
   }
 
   return (
@@ -118,7 +135,7 @@ export function CityAutocomplete({
             className={cn("bg-background border-border", className)}
             autoComplete="off"
           />
-          {value.length >= 2 && (
+          {value.length >= 1 && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <MapPin className="h-4 w-4" />
             </div>
@@ -132,6 +149,7 @@ export function CityAutocomplete({
           align="start"
           side="bottom"
           sideOffset={4}
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <Command className="bg-transparent">
             <CommandList className="max-h-60">
@@ -141,7 +159,7 @@ export function CityAutocomplete({
               <CommandGroup>
                 {suggestions.map((city, index) => (
                   <CommandItem
-                    key={`${city.city}-${city.country}`}
+                    key={`${city.city}-${city.country}-${index}`}
                     value={city.city}
                     onSelect={() => handleSelectCity(city)}
                     className={cn(
