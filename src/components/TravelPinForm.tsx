@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { MapPin, Calendar, FileText, Image } from '@phosphor-icons/react'
 import { useKV } from '@github/spark/hooks'
+import { CityAutocomplete } from '@/components/CityAutocomplete'
+import { type CityData } from '@/data/cities'
 
 export interface TravelPin {
   id: string
@@ -39,6 +41,14 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
     description: editPin?.description || '',
     photo: editPin?.photo || ''
   })
+
+  const handleCitySelect = (city: CityData) => {
+    setFormData(prev => ({
+      ...prev,
+      city: city.city,
+      country: city.country
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -104,13 +114,13 @@ export function TravelPinForm({ isOpen, onClose, lat, lng, editPin }: TravelPinF
             
             <div className="space-y-2">
               <Label htmlFor="city" className="text-sm font-medium">City</Label>
-              <Input
+              <CityAutocomplete
                 id="city"
                 value={formData.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                placeholder="e.g., Paris"
+                onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                onCitySelect={handleCitySelect}
+                placeholder="e.g., Paris, Warszawa, Tokyo..."
                 required
-                className="bg-background border-border"
               />
             </div>
           </div>
