@@ -27,6 +27,21 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
   const [isLoaded, setIsLoaded] = useState(false)
   const cloudsMeshRef = useRef<THREE.Mesh | null>(null)
 
+  // Suppress ResizeObserver errors
+  useEffect(() => {
+    const originalError = console.error
+    console.error = (...args) => {
+      if (args[0]?.includes?.('ResizeObserver loop completed')) {
+        return // Ignore ResizeObserver errors
+      }
+      originalError(...args)
+    }
+    
+    return () => {
+      console.error = originalError
+    }
+  }, [])
+
   // Convert pins to points format for react-globe.gl
   const pointsData = (pins || []).map(pin => ({
     ...pin,
@@ -46,7 +61,7 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
         const cloudsMaterial = new THREE.MeshLambertMaterial({
           map: new THREE.TextureLoader().load('//unpkg.com/three-globe/example/img/earth-clouds.png'),
           transparent: true,
-          opacity: 0.3
+          opacity: 0.2
         })
         
         const cloudsMesh = new THREE.Mesh(cloudsGeometry, cloudsMaterial)
@@ -56,8 +71,8 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
         // Add day/night terminator effect
         const terminatorGeometry = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.001, 64, 64)
         const terminatorMaterial = new THREE.MeshBasicMaterial({
-          color: 0x000000,
-          opacity: 0.4,
+          color: 0x000033,
+          opacity: 0.3,
           transparent: true,
           side: THREE.BackSide,
         })
@@ -66,18 +81,22 @@ export function SimpleGlobe({ onLocationClick, onPinClick, selectedPin }: Simple
         
         // Animate clouds and day/night cycle
         const animate = () => {
-          // Slowly rotate clouds
-          if (cloudsMeshRef.current) {
-            cloudsMeshRef.current.rotation.y += 0.0005
+          try {
+            // Slowly rotate clouds
+            if (cloudsMeshRef.current) {
+              cloudsMeshRef.current.rotation.y += 0.0003
+            }
+            
+            // Update day/night terminator based on current time
+            const now = new Date()
+            const hours = now.getUTCHours() + now.getUTCMinutes() / 60
+            const angle = (hours / 24) * Math.PI * 2
+            terminatorMesh.rotation.y = angle
+            
+            requestAnimationFrame(animate)
+          } catch (err) {
+            // Safely handle animation errors
           }
-          
-          // Update day/night terminator based on current time
-          const now = new Date()
-          const hours = now.getUTCHours() + now.getUTCMinutes() / 60
-          const angle = (hours / 24) * Math.PI * 2
-          terminatorMesh.rotation.y = angle
-          
-          requestAnimationFrame(animate)
         }
         animate()
         
