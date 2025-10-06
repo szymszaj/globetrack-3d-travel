@@ -1,3 +1,10 @@
+# Spark / internal files
+.spark-workbench-id
+.spark-initial-sha
+SECURITY.md
+PRD.md
+LICENSE
+
 # Logs
 logs
 *.log
@@ -30,5 +37,3 @@ packages
 pids
 .file-manifest
 .devcontainer/
-
-.spark-workbench-id
